@@ -109,7 +109,7 @@
         pointer-events: all;
     }
 
-    #container {
+    /* #container {
         position: absolute;
         top: 0;
         z-index: 200000;
@@ -121,14 +121,14 @@
         background: RGBA(0, 0, 0, 0.4);
         max-width: 300px;
         color: white;
-    }
+    } */
 
-    #mySectionPlanesOverviewCanvas {
+    /* #mySectionPlanesOverviewCanvas {
         width: 250px;
         height: 250px;
         bottom: 70px;
         right: 10px;
-    }
+    } */
 
   </style>
 </head>
@@ -136,14 +136,14 @@
   <canvas id="myCanvas"></canvas>
   <canvas id="myNavCubeCanvas"></canvas>
 
-  <div id="container">
+  <!-- <div id="container">
     <h1>Section planes bug reproduce</h1><br>
 
     <div>
         <canvas id="mySectionPlanesOverviewCanvas"></canvas>
     </div>
 
-  </div>
+  </div> -->
 
   <div id ="treeViewContainer"></div>
 </body>
@@ -191,28 +191,37 @@
 
   const xktLoader = new XKTLoaderPlugin(viewer);
 
-  const sceneModel = xktLoader.load({
-        id: "myModel",
-        src: "../assets/models/Hospital_Shell_Sample.ifc.xkt",
+  const sceneModel1 = xktLoader.load({
+        id: "myModel1",
+        src: "../assets/models/Hospital_MedPlanning_Sample.ifc.xkt",
         excludeTypes: ["IfcSpace"],
         edges: true
   });
 
-  sectionPlanes.createSectionPlane({
-        id: "mySectionPlane",
-        pos: [1.04, 1.95, 9.74],
-        dir: [1.0, 0.0, 0.0]
+  sceneModel1.on("loaded", () => {
+    const sceneModel2 = xktLoader.load({
+      id: "myModel2",
+      src: "../assets/models/Hospital_Shell_Sample.ifc.xkt",
+      excludeTypes: ["IfcSpace"],
+      edges: true
+    });
   });
 
-  sectionPlanes.createSectionPlane({
-      id: "mySectionPlane2",
-      pos: [2.30, 4.46, 14.93],
-      dir: [0.0, -0.09, -0.79]
-  });
+  // sectionPlanes.createSectionPlane({
+  //       id: "mySectionPlane",
+  //       pos: [1.04, 1.95, 9.74],
+  //       dir: [1.0, 0.0, 0.0]
+  // });
 
-  window.viewer = viewer;
+  // sectionPlanes.createSectionPlane({
+  //     id: "mySectionPlane2",
+  //     pos: [2.30, 4.46, 14.93],
+  //     dir: [0.0, -0.09, -0.79]
+  // });
 
-  const canvas = document.getElementById("mySectionPlanesOverviewCanvas");
+  // window.viewer = viewer;
+
+  // const canvas = document.getElementById("mySectionPlanesOverviewCanvas");
 
 </script>
 </html>
