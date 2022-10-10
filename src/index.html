@@ -109,46 +109,18 @@
         pointer-events: all;
     }
 
-    /* #container {
-        position: absolute;
-        top: 0;
-        z-index: 200000;
-        float: right;
-        right: 0;
-        padding: 10px;
-        height: auto;
-        text-align: left;
-        background: RGBA(0, 0, 0, 0.4);
-        max-width: 300px;
-        color: white;
-    } */
-
-    /* #mySectionPlanesOverviewCanvas {
-        width: 250px;
-        height: 250px;
-        bottom: 70px;
-        right: 10px;
-    } */
-
   </style>
 </head>
 <body>
   <canvas id="myCanvas"></canvas>
   <canvas id="myNavCubeCanvas"></canvas>
 
-  <!-- <div id="container">
-    <h1>Section planes bug reproduce</h1><br>
-
-    <div>
-        <canvas id="mySectionPlanesOverviewCanvas"></canvas>
-    </div>
-
-  </div> -->
-
   <div id ="treeViewContainer"></div>
 </body>
 <script type="module">
-  import {Viewer, XKTLoaderPlugin, NavCubePlugin, TreeViewPlugin, SectionPlanesPlugin} from "../dist/xeokit-sdk.es.js";
+  import {Viewer, XKTLoaderPlugin, NavCubePlugin, 
+    TreeViewPlugin, StoreyViewsPlugin, buildGridGeometry,
+    VBOGeometry, Mesh, PhongMaterial} from "../dist/xeokit-sdk.es.js";
 
   const viewer = new Viewer({
         canvasId: "myCanvas",
@@ -156,19 +128,18 @@
         saoEnabled: true
   });
 
-  // viewer.camera.eye = [102.07185264355974, 45.23873322531372, -54.1001537318987]
-  // viewer.camera.look = [35.0291287591034, -3.5295781673428905, -20.312957533628705]
-  // viewer.camera.up = [-0.48646319926706455, 0.8385999559445908, 0.24516049773277654]
-
-  // viewer.camera.eye = [110.27, 172.88, -6.49];
-  // viewer.camera.look = [33.88, 177.99, -101.79];
-  // viewer.camera.up = [0.02, 0.99, 0.03];
-
-  // viewer.camera.eye = [-5.02, 2.22, 15.09];
-  // viewer.camera.look = [4.97, 2.79, 9.89];
-  // viewer.camera.up = [-0.05, 0.99, 0.02];
-  // viewer.camera.project.fov = 45;
-  // viewer.camera.zoom(5);
+  new Mesh(viewer.scene, {
+    geometry: new VBOGeometry(viewer.scene, buildGridGeometry({
+      size: 600,
+      divisions: 100
+    })),
+    material: new PhongMaterial(viewer.scene, {
+      color: [0.0, 0.0, 0.0],
+      emissive: [0.4, 0.4, 0.4]
+    }),
+    position: [0, -1.6, 0],
+    collidable: false
+  });
 
   new NavCubePlugin(viewer, {
     canvasId: "myNavCubeCanvas",
@@ -184,44 +155,25 @@
         autoExpandDepth: 3 // Initially expand the root tree node
   });
 
-  const sectionPlanes = new SectionPlanesPlugin(viewer, {
-        overviewCanvasId: "mySectionPlanesOverviewCanvas",
-        overviewVisible: true
-  });
-
   const xktLoader = new XKTLoaderPlugin(viewer);
 
-  const sceneModel1 = xktLoader.load({
-        id: "myModel1",
-        src: "../assets/models/Hospital_MedPlanning_Sample.ifc.xkt",
-        excludeTypes: ["IfcSpace"],
+  const sceneModel = xktLoader.load({
+        id: "myModel",
+        src: "../assets/models/NSC_Model_Mod.xkt",
+        // includeTypes: ["IfcStair","IfcStairFlight","IfcSlab"],
+        // includeTypes: ["IfcPlate","IfcMember","IfcRoof","IfcWall","IfcRoof","IfcSlab","IfcStair","IfcStairFlight"],
         edges: true
   });
 
-  sceneModel1.on("loaded", () => {
-    const sceneModel2 = xktLoader.load({
-      id: "myModel2",
-      src: "../assets/models/Hospital_Shell_Sample.ifc.xkt",
-      excludeTypes: ["IfcSpace"],
-      edges: true
-    });
-  });
+  const storeyViewsPlugin = new StoreyViewsPlugin(viewer);
 
-  // sectionPlanes.createSectionPlane({
-  //       id: "mySectionPlane",
-  //       pos: [1.04, 1.95, 9.74],
-  //       dir: [1.0, 0.0, 0.0]
-  // });
-
-  // sectionPlanes.createSectionPlane({
-  //     id: "mySectionPlane2",
-  //     pos: [2.30, 4.46, 14.93],
-  //     dir: [0.0, -0.09, -0.79]
-  // });
-
-  // window.viewer = viewer;
-
-  // const canvas = document.getElementById("mySectionPlanesOverviewCanvas");
-
+  sceneModel.on("loaded", () => {
+    setTimeout(() => {
+      storeyViewsPlugin.showStoreyObjects("0JPzx9kB53s9lKaS7hg4sk", {
+        hideOthers: true,
+        useObjectStates: false
+      });
+    }, 1000);
+  })
 </script>
 </html>
