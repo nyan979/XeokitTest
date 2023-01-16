@@ -120,31 +120,11 @@
     import {
       Viewer,
       XKTLoaderPlugin,
-      NavCubePlugin,
       TreeViewPlugin,
-      Mesh,
-      buildBoxGeometry,
-      VBOSceneModel,
-      StoreyViewsPlugin,
     } from "../dist/xeokit-sdk.es.js";
 
     const viewer = new Viewer({
       canvasId: "myCanvas",
-    });
-
-    const camera = viewer.scene.camera;
-
-    viewer.scene.camera.eye = [-69.4630842531949,251.4004703154131,60.21351254341772];
-    viewer.scene.camera.look = [7.82476123561392,142.09999922513964,137.50135803222656];
-    viewer.scene.camera.up = [0.5000023975172442,0.7071033905688867,0.5000023975172443];
-
-    const navCube = new NavCubePlugin(viewer, {
-      canvasId: "myNavCubeCanvas",
-      visible: true,
-      size: 250,
-      alignment: "bottomRight",
-      bottomMargin: 100,
-      rightMargin: 10,
     });
 
     const treeView = new TreeViewPlugin(viewer, {
@@ -156,94 +136,41 @@
       reuseGeometries: false, // <------- Disable geometry resuse
     });
 
-    const storeyViewsPlugin = new StoreyViewsPlugin(viewer);
-
-    const myObjectDefaults = {
-      IfcBuildingElementProxy: {
-        colorize: [1, 0, 0]
-      }
-    };
-
-    const sceneModel1 = xktLoader.load({
-      id: "Archi",
-      src: "../assets/models/NSC_Compact.xkt",
+    const sceneModel = xktLoader.load({
+      id: "Hunter-Afv",
+      src: "../assets/stl/hunter.ifc.xkt",
       edges: true,
       saoEnabled: true,
-      excludeTypes: ["IfcCovering"],
     });
 
-    sceneModel1.on("loaded", () => {
-      // viewer.cameraFlight.flyTo(sceneModel1);
-      setTimeout(() => {
-          viewer.cameraFlight.flyTo({
-          eye: [7.82476123561392,251.40099441996773,246.80235322705465],
-          look: [7.82476123561392,142.09999922513964,137.50135803222656],
-          up: [0,0.7071067811865476,-0.7071067811865476],
-          duration: 1 // Default, seconds
-        },() => {
-          // Done
-          setTimeout(() => {
-            storeyViewsPlugin.showStoreyObjects("0JPzx9kB53s9lKaS7hg4si", {
-                hideOthers: true,
-                useObjectStates: false
-            });
-            const sceneModel2 = xktLoader.load({
-              id: "Body",
-              src: "../assets/models/NSC_Deadbody_L3.ifc.xkt",
-              edges: false,
-              saoEnabled: true,
-              objectDefaults: myObjectDefaults // Use our custom initial default states for object Entities
-            });
-            sceneModel2.on("loaded", () => {
-              // viewer.scene.setObjectsSelected(["3kgl$HeLD8Eh5srQDztU3v"], true);
-              const entity = viewer.scene.objects["3kgl$HeLD8Eh5srQDztU3v"];
-              viewer.cameraFlight.flyTo({
-                eye: [36.1692312536362,125.15738544565917,139.85860309937237],
-                look: [36.1692312536362,123.61135569235748,138.31257334607068],
-                up: [0,0.7071067811865476,-0.7071067811865475],
-                duration: 3 // Default, seconds
-              });
-              // storeyViewsPlugin.gotoStoreyCamera("0JPzx9kB53s9lKaS7hg4si", {
-              //   // projection: "perspective", // Perspective projection
-              //   duration: 5,       // 2.5 second transition
-              //   // fitFOV: 65,
-              //   done: () => {
-              //       // viewer.cameraControl.planView = true; // Disable rotation
-              //   }
-              // });
-            });
-          }, 1000);
-        });
-      }, 1000);
+    sceneModel.on("loaded", () => {
+      viewer.cameraFlight.jumpTo(sceneModel);
+      viewer.scene.setObjectsHighlighted(["1tiouzRs95kP3yS43AGf2s"], true);
+      viewer.scene.setObjectsHighlighted(["1tiouzRs95kP3yS43AGf2t"], true);
     });
 
-    // 36.1692312536362,125.15738544565917,139.85860309937237
-    // 36.1692312536362,123.61135569235748,138.31257334607068
-    // 0,0.7071067811865476,-0.7071067811865475
+    var lastEntity = null;
 
-    viewer.scene.input.on("mouseclicked", () => {
-      console.log("Camera eye -> " + camera.eye)
-      console.log("Camera look -> " + camera.look)
-      console.log("Camera up -> " + camera.up)
-    })
-   /* viewer.scene.input.on("mouseclicked", (coords) => {
-      const pickResult = viewer.scene.pick({
+    viewer.scene.input.on("mousemove", function (coords) {
+      var hit = viewer.scene.pick({
         canvasPos: coords,
-        pickSurface: true, // <<------ This causes picking to find the intersection point on the entity
       });
 
-      if (pickResult) {
-        console.log(
-          "World Coordinate: x= " +
-            pickResult.worldPos[0] +
-            ", y=" +
-            pickResult.worldPos[1] +
-            ", z=" +
-            pickResult.worldPos[2]
-        );
+      if (hit) {
+        if (!lastEntity || hit.entity.id !== lastEntity.id) {
+          if (lastEntity) {
+            lastEntity.xrayed = false;
+          }
 
-        viewer.scene.camera.eye = pickResult.worldPos;
+          lastEntity = hit.entity;
+          hit.entity.xrayed = true;
+        }
+      } else {
+        if (lastEntity) {
+          lastEntity.xrayed = false;
+          lastEntity = null;
+        }
       }
-    }); */
+    });
   </script>
 </html>

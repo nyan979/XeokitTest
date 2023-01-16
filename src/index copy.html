@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>xeokit Example</title>
+    <link href="css/pageStyle.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+    <style>
+      #myNavCubeCanvas {
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        bottom: 50px;
+        right: 10px;
+        z-index: 200000;
+      }
+
+      #treeViewContainer {
+        pointer-events: all;
+        height: 100%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        position: absolute;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: black;
+        top: 80px;
+        z-index: 200000;
+        float: left;
+        left: 0;
+        padding-left: 10px;
+        font-family: "Roboto", sans-serif;
+        font-size: 15px;
+        user-select: none;
+        -ms-user-select: none;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        width: 350px;
+      }
+
+      #treeViewContainer ul {
+        list-style: none;
+        padding-left: 1.75em;
+        pointer-events: none;
+      }
+
+      #treeViewContainer ul li {
+        position: relative;
+        width: 500px;
+        pointer-events: none;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        vertical-align: middle;
+      }
+
+      #treeViewContainer ul li a {
+        background-color: #eee;
+        border-radius: 50%;
+        color: #000;
+        display: inline-block;
+        height: 1.5em;
+        left: -1.5em;
+        position: absolute;
+        text-align: center;
+        text-decoration: none;
+        width: 1.5em;
+        pointer-events: all;
+      }
+
+      #treeViewContainer ul li a.plus {
+        background-color: #ded;
+        pointer-events: all;
+      }
+
+      #treeViewContainer ul li a.minus {
+        background-color: #eee;
+        pointer-events: all;
+      }
+
+      #treeViewContainer ul li a:active {
+        top: 1px;
+        pointer-events: all;
+      }
+
+      #treeViewContainer ul li span:hover {
+        color: white;
+        cursor: pointer;
+        background: black;
+        padding-left: 2px;
+        pointer-events: all;
+      }
+
+      #treeViewContainer ul li span {
+        display: inline-block;
+        width: calc(100% - 50px);
+        padding-left: 2px;
+        pointer-events: all;
+        height: 23px;
+      }
+
+      #treeViewContainer .highlighted-node {
+        /* Appearance of node highlighted with TreeViewPlugin#showNode() */
+        border: black solid 1px;
+        background: yellow;
+        color: black;
+        padding-left: 1px;
+        padding-right: 5px;
+        pointer-events: all;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas"></canvas>
+    <canvas id="myNavCubeCanvas"></canvas>
+
+    <div id="treeViewContainer"></div>
+  </body>
+  <script type="module">
+    import {
+      Viewer,
+      XKTLoaderPlugin,
+      NavCubePlugin,
+      TreeViewPlugin,
+      Mesh,
+      buildBoxGeometry,
+      VBOSceneModel,
+      StoreyViewsPlugin,
+    } from "../dist/xeokit-sdk.es.js";
+
+    const viewer = new Viewer({
+      canvasId: "myCanvas",
+    });
+
+    const camera = viewer.scene.camera;
+
+    viewer.scene.camera.eye = [
+      -69.4630842531949, 251.4004703154131, 60.21351254341772,
+    ];
+    viewer.scene.camera.look = [
+      7.82476123561392, 142.09999922513964, 137.50135803222656,
+    ];
+    viewer.scene.camera.up = [
+      0.5000023975172442, 0.7071033905688867, 0.5000023975172443,
+    ];
+
+    const navCube = new NavCubePlugin(viewer, {
+      canvasId: "myNavCubeCanvas",
+      visible: true,
+      size: 250,
+      alignment: "bottomRight",
+      bottomMargin: 100,
+      rightMargin: 10,
+    });
+
+    const treeView = new TreeViewPlugin(viewer, {
+      containerElement: document.getElementById("treeViewContainer"),
+      autoExpandDepth: 0, // Initially expand the root tree node
+    });
+
+    const xktLoader = new XKTLoaderPlugin(viewer, {
+      reuseGeometries: false, // <------- Disable geometry resuse
+    });
+
+    const storeyViewsPlugin = new StoreyViewsPlugin(viewer);
+
+    const myObjectDefaults = {
+      IfcBuildingElementProxy: {
+        colorize: [1, 0, 0],
+      },
+    };
+
+    const sceneModel1 = xktLoader.load({
+      id: "Archi",
+      src: "../assets/models/NSC_Compact.xkt",
+      edges: true,
+      saoEnabled: true,
+      excludeTypes: ["IfcCovering"],
+    });
+
+    sceneModel1.on("loaded", () => {
+      // viewer.cameraFlight.flyTo(sceneModel1);
+      setTimeout(() => {
+        viewer.cameraFlight.flyTo(
+          {
+            eye: [7.82476123561392, 251.40099441996773, 246.80235322705465],
+            look: [7.82476123561392, 142.09999922513964, 137.50135803222656],
+            up: [0, 0.7071067811865476, -0.7071067811865476],
+            duration: 1, // Default, seconds
+          },
+          () => {
+            // Done
+            setTimeout(() => {
+              storeyViewsPlugin.showStoreyObjects("0JPzx9kB53s9lKaS7hg4si", {
+                hideOthers: true,
+                useObjectStates: false,
+              });
+              const sceneModel2 = xktLoader.load({
+                id: "Body",
+                src: "../assets/models/NSC_Deadbody_L3.ifc.xkt",
+                edges: false,
+                saoEnabled: true,
+                objectDefaults: myObjectDefaults, // Use our custom initial default states for object Entities
+              });
+              sceneModel2.on("loaded", () => {
+                // viewer.scene.setObjectsSelected(["3kgl$HeLD8Eh5srQDztU3v"], true);
+                const entity = viewer.scene.objects["3kgl$HeLD8Eh5srQDztU3v"];
+                viewer.cameraFlight.flyTo({
+                  eye: [
+                    36.1692312536362, 125.15738544565917, 139.85860309937237,
+                  ],
+                  look: [
+                    36.1692312536362, 123.61135569235748, 138.31257334607068,
+                  ],
+                  up: [0, 0.7071067811865476, -0.7071067811865475],
+                  duration: 3, // Default, seconds
+                });
+                // storeyViewsPlugin.gotoStoreyCamera("0JPzx9kB53s9lKaS7hg4si", {
+                //   // projection: "perspective", // Perspective projection
+                //   duration: 5,       // 2.5 second transition
+                //   // fitFOV: 65,
+                //   done: () => {
+                //       // viewer.cameraControl.planView = true; // Disable rotation
+                //   }
+                // });
+              });
+            }, 1000);
+          }
+        );
+      }, 1000);
+    });
+
+    // 36.1692312536362,125.15738544565917,139.85860309937237
+    // 36.1692312536362,123.61135569235748,138.31257334607068
+    // 0,0.7071067811865476,-0.7071067811865475
+
+    viewer.scene.input.on("mouseclicked", () => {
+      console.log("Camera eye -> " + camera.eye);
+      console.log("Camera look -> " + camera.look);
+      console.log("Camera up -> " + camera.up);
+    });
+    /* viewer.scene.input.on("mouseclicked", (coords) => {
+      const pickResult = viewer.scene.pick({
+        canvasPos: coords,
+        pickSurface: true, // <<------ This causes picking to find the intersection point on the entity
+      });
+
+      if (pickResult) {
+        console.log(
+          "World Coordinate: x= " +
+            pickResult.worldPos[0] +
+            ", y=" +
+            pickResult.worldPos[1] +
+            ", z=" +
+            pickResult.worldPos[2]
+        );
+
+        viewer.scene.camera.eye = pickResult.worldPos;
+      }
+    }); */
+  </script>
+</html>
