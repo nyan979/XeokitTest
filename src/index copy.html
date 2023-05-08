@@ -126,6 +126,7 @@
       buildBoxGeometry,
       VBOSceneModel,
       StoreyViewsPlugin,
+      FastNavPlugin,
     } from "../dist/xeokit-sdk.es.js";
 
     const viewer = new Viewer({
@@ -159,22 +160,43 @@
     });
 
     const xktLoader = new XKTLoaderPlugin(viewer, {
-      reuseGeometries: false, // <------- Disable geometry resuse
+      reuseGeometries: true,
     });
 
     const storeyViewsPlugin = new StoreyViewsPlugin(viewer);
 
-    const myObjectDefaults = {
-      IfcBuildingElementProxy: {
-        colorize: [1, 0, 0],
-      },
-    };
+    new FastNavPlugin(viewer, {
+     hideEdges: true,                // Don't show edges while we interact (default is true)
+     hideSAO: true,                  // Don't show ambient shadows while we interact (default is true)
+     hideColorTexture: true,        // No color textures while we interact (default is true)
+     hidePBR: true,                  // No physically-based rendering while we interact (default is true)
+     hideTransparentObjects: true,   // Hide transparent objects while we interact (default is false)
+     scaleCanvasResolution: true,    // Scale canvas resolution while we interact (default is false)
+     scaleCanvasResolutionFactor: 0.5,  // Factor by which we scale canvas resolution when we interact (default is 0.6)
+     delayBeforeRestore: true,       // When we stop interacting, delay before restoring normal render (default is true)
+     delayBeforeRestoreSeconds: 0.5  // The delay duration, in seconds (default is 0.5)
+    });
 
+    // const myObjectDefaults = {
+    //   IfcBuildingElementProxy: {
+    //     colorize: [1, 0, 0],
+    //   },
+    // };
+    
+    const sceneModel2 = xktLoader.load({
+      id: "MEP",
+      src: "../assets/models/NSC_MEP.xkt",
+      edges: false,
+      saoEnabled: true,
+      // objectDefaults: myObjectDefaults, // Use our custom initial default states for object Entities
+    });
+
+    
     const sceneModel1 = xktLoader.load({
       id: "Archi",
       src: "../assets/models/NSC_Compact.xkt",
       edges: true,
-      saoEnabled: true,
+      sao: true,
       excludeTypes: ["IfcCovering"],
     });
 
@@ -188,44 +210,37 @@
             up: [0, 0.7071067811865476, -0.7071067811865476],
             duration: 1, // Default, seconds
           },
-          () => {
-            // Done
-            setTimeout(() => {
-              storeyViewsPlugin.showStoreyObjects("0JPzx9kB53s9lKaS7hg4si", {
-                hideOthers: true,
-                useObjectStates: false,
-              });
-              const sceneModel2 = xktLoader.load({
-                id: "Body",
-                src: "../assets/models/NSC_Deadbody_L3.ifc.xkt",
-                edges: false,
-                saoEnabled: true,
-                objectDefaults: myObjectDefaults, // Use our custom initial default states for object Entities
-              });
-              sceneModel2.on("loaded", () => {
-                // viewer.scene.setObjectsSelected(["3kgl$HeLD8Eh5srQDztU3v"], true);
-                const entity = viewer.scene.objects["3kgl$HeLD8Eh5srQDztU3v"];
-                viewer.cameraFlight.flyTo({
-                  eye: [
-                    36.1692312536362, 125.15738544565917, 139.85860309937237,
-                  ],
-                  look: [
-                    36.1692312536362, 123.61135569235748, 138.31257334607068,
-                  ],
-                  up: [0, 0.7071067811865476, -0.7071067811865475],
-                  duration: 3, // Default, seconds
-                });
-                // storeyViewsPlugin.gotoStoreyCamera("0JPzx9kB53s9lKaS7hg4si", {
-                //   // projection: "perspective", // Perspective projection
-                //   duration: 5,       // 2.5 second transition
-                //   // fitFOV: 65,
-                //   done: () => {
-                //       // viewer.cameraControl.planView = true; // Disable rotation
-                //   }
-                // });
-              });
-            }, 1000);
-          }
+          // () => {
+          //   // Done
+          //   setTimeout(() => {
+          //     storeyViewsPlugin.showStoreyObjects("0JPzx9kB53s9lKaS7hg4si", {
+          //       hideOthers: true,
+          //       useObjectStates: false,
+          //     });
+          //     sceneModel2.on("loaded", () => {
+          //       // viewer.scene.setObjectsSelected(["3kgl$HeLD8Eh5srQDztU3v"], true);
+          //       const entity = viewer.scene.objects["3kgl$HeLD8Eh5srQDztU3v"];
+          //       viewer.cameraFlight.flyTo({
+          //         eye: [
+          //           36.1692312536362, 125.15738544565917, 139.85860309937237,
+          //         ],
+          //         look: [
+          //           36.1692312536362, 123.61135569235748, 138.31257334607068,
+          //         ],
+          //         up: [0, 0.7071067811865476, -0.7071067811865475],
+          //         duration: 3, // Default, seconds
+          //       });
+          //       // storeyViewsPlugin.gotoStoreyCamera("0JPzx9kB53s9lKaS7hg4si", {
+          //       //   // projection: "perspective", // Perspective projection
+          //       //   duration: 5,       // 2.5 second transition
+          //       //   // fitFOV: 65,
+          //       //   done: () => {
+          //       //       // viewer.cameraControl.planView = true; // Disable rotation
+          //       //   }
+          //       // });
+          //     });
+            // }, 1000);
+          // }
         );
       }, 1000);
     });

@@ -139,21 +139,41 @@
       reuseGeometries: false, // <------- Disable geometry resuse
     });
 
-    const sceneModel = xktLoader.load({
-      id: "Hunter-Afv",
-      src: "../assets/stl/hunter.ifc.xkt",
-      edges: true,
-      saoEnabled: true,
-    });
+    xktLoader.globalizeObjectIds = true;
 
-    sceneModel.on("loaded", () => {
-      treeView.addModel(sceneModel.id, {
-        rootName: "Hunter-afv"
-      });
-      viewer.cameraFlight.jumpTo(sceneModel);
-      viewer.scene.setObjectsHighlighted(["1tiouzRs95kP3yS43AGf2s"], true);
-      viewer.scene.setObjectsHighlighted(["1tiouzRs95kP3yS43AGf2t"], true);
-    });
+    for (let i = -2; i < 2; i++) {
+      for (let j = -1; j < 2; j++) {
+        let hunterSceneModel = xktLoader.load({
+          id: "Hunter-Afv" + '-' + i + '-' + j,
+          src: "../assets/stl/bmw.ifc.xkt",
+          edges: true,
+          saoEnabled: true,
+          position: [i * 100, 0, j * 100],
+        });
+
+        hunterSceneModel.on("loaded", () => {
+          treeView.addModel(hunterSceneModel.id, {
+            rootName: "Hunter-afv"
+          });
+        });
+      }
+    }
+
+    // const sceneModel = xktLoader.load({
+    //   id: "Hunter-Afv",
+    //   src: "../assets/stl/hunter.ifc.xkt",
+    //   edges: true,
+    //   saoEnabled: true,
+    // });
+
+    // sceneModel.on("loaded", () => {
+    //   treeView.addModel(sceneModel.id, {
+    //     rootName: "Hunter-afv"
+    //   });
+    //   viewer.cameraFlight.jumpTo(sceneModel);
+    //   viewer.scene.setObjectsHighlighted(["1tiouzRs95kP3yS43AGf2s"], true);
+    //   viewer.scene.setObjectsHighlighted(["1tiouzRs95kP3yS43AGf2t"], true);
+    // });
 
     var lastEntity = null;
 
@@ -179,6 +199,8 @@
 
           lastEntity = hit.entity;
           hit.entity.xrayed = true;
+          viewer.scene.setObjectsColorized(hit.entity.id, [0, 1, 0]);
+          console.log(viewer.scene.objects);
         }
       } else {
         if (lastEntity) {
@@ -186,6 +208,8 @@
           lastEntity = null;
         }
       }
+
+      
     });
   </script>
 </html>
